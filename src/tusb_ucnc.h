@@ -37,6 +37,7 @@ extern "C"
 #define tusb_cdc_write(ch) tud_cdc_n_write_char(0, ch)
 #define tusb_cdc_write_available() tud_cdc_n_write_available(0)
 #define tusb_cdc_write_buffer(buffer, bufsize) tud_cdc_n_write(0, buffer, bufsize)
+#define tusb_cdc_connected tud_cdc_n_connected(0)
 
 #ifdef __cplusplus
 }
