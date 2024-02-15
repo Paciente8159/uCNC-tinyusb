@@ -8,15 +8,28 @@ repos:
   hooks:
   - id: check-yaml
   - id: trailing-whitespace
+    exclude: |
+      (?x)^(
+        hw/bsp/mcx/sdk/
+      )
   - id: end-of-file-fixer
+    exclude: |
+      (?x)^(
+        .idea/|
+        hw/bsp/mcx/sdk/
+      )
   - id: forbid-submodules
 
 - repo: https://github.com/codespell-project/codespell
   rev: v2.2.4
   hooks:
   - id: codespell
-    #args: [-w]
-    exclude: ^lib/
+    args: [-w]
+    exclude: |
+      (?x)^(
+        lib/|
+        hw/bsp/mcx/sdk/
+      )
 
 - repo: local
   hooks:

@@ -12,7 +12,6 @@ latex
 *.ind
 .env
 .settings/
-.idea/
 .vscode/
 .gdb_history
 /examples/*/*/build*
@@ -22,12 +21,16 @@ _build
 /examples/*/*/ses
 /examples/*/*/ozone
 /examples/obsolete
+hw/bsp/**/cubemx/*/
+.mxproject
 # coverity intermediate files
 cov-int
 # cppcheck build directories
 *-build-dir
 /_bin/
 __pycache__
+cmake-build-*
+sdkconfig
 
 # submodules
 hw/mcu/allwinner
@@ -78,6 +81,7 @@ hw/mcu/st/stm32u5xx_hal_driver
 hw/mcu/st/stm32wbxx_hal_driver
 hw/mcu/ti
 hw/mcu/wch/ch32v307
+hw/mcu/wch/ch32f20x
 lib/CMSIS_5
 lib/FreeRTOS-Kernel
 lib/lwip

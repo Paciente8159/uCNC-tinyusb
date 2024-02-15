@@ -30,13 +30,8 @@ def skip_example(example, board):
         family_dir = board_dir.parent.parent
         family = family_dir.name
 
-        # family CMake
-        family_mk = family_dir / "family.cmake"
-
         # family.mk
-        if not family_mk.exists():
-            family_mk = family_dir / "family.mk"
-
+        family_mk = family_dir / "family.mk"
         mk_contents = family_mk.read_text()
 
     # Find the mcu, first in family mk then board mk
@@ -47,12 +42,20 @@ def skip_example(example, board):
 
         mk_contents = board_mk.read_text()
 
+    mcu = "NONE"
     for token in mk_contents.split():
         if "CFG_TUSB_MCU=OPT_MCU_" in token:
             # Strip " because cmake files has them.
             token = token.strip("\"")
             _, opt_mcu = token.split("=")
             mcu = opt_mcu[len("OPT_MCU_"):]
+            break
+        if "esp32s2" in token:
+            mcu = "ESP32S2"
+            break
+        if "esp32s3" in token:
+            mcu = "ESP32S3"
+            break
 
     # Skip all OPT_MCU_NONE these are WIP port
     if mcu == "NONE":
@@ -93,7 +96,7 @@ def build_example(example, board, make_option):
         ret[2] = 1
         print(build_format.format(example, board, status, '-', flash_size, sram_size))
     else:
-        subprocess.run(make_cmd + " clean", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        #subprocess.run(make_cmd + " clean", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         build_result = subprocess.run(make_cmd + " all", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
         if build_result.returncode == 0:
