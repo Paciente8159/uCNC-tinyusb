@@ -38,6 +38,9 @@ extern "C"
 #ifndef CFG_TUSB_MCU
 // STM32
 #ifdef ARDUINO_ARCH_STM32
+#ifdef STM32F0xx
+#define CFG_TUSB_MCU OPT_MCU_STM32F0
+#endif
 #ifdef STM32F1xx
 #define CFG_TUSB_MCU OPT_MCU_STM32F1
 #endif
