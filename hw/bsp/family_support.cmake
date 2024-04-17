@@ -79,17 +79,27 @@ set(WARNING_FLAGS_IAR "")
 function(family_filter RESULT DIR)
   get_filename_component(DIR ${DIR} ABSOLUTE BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-  if (EXISTS "${DIR}/only.txt")
-    file(READ "${DIR}/only.txt" ONLYS)
-    # Replace newlines with semicolon so that it is treated as a list by CMake
-    string(REPLACE "\n" ";" ONLYS_LINES ${ONLYS})
+  if (EXISTS "${DIR}/skip.txt")
+    file(STRINGS "${DIR}/skip.txt" SKIPS_LINES)
+    foreach(MCU IN LISTS FAMILY_MCUS)
+      # For each line in only.txt
+      foreach(_line ${SKIPS_LINES})
+        # If mcu:xxx exists for this mcu then skip
+        if (${_line} STREQUAL "mcu:${MCU}" OR ${_line} STREQUAL "board:${BOARD}" OR ${_line} STREQUAL "family:${FAMILY}")
+          set(${RESULT} 0 PARENT_SCOPE)
+          return()
+        endif()
+      endforeach()
+    endforeach()
+  endif ()
 
-    # For each mcu
+  if (EXISTS "${DIR}/only.txt")
+    file(STRINGS "${DIR}/only.txt" ONLYS_LINES)
     foreach(MCU IN LISTS FAMILY_MCUS)
       # For each line in only.txt
       foreach(_line ${ONLYS_LINES})
         # If mcu:xxx exists for this mcu or board:xxx then include
-        if (${_line} STREQUAL "mcu:${MCU}" OR ${_line} STREQUAL "board:${BOARD}")
+        if (${_line} STREQUAL "mcu:${MCU}" OR ${_line} STREQUAL "board:${BOARD}" OR ${_line} STREQUAL "family:${FAMILY}")
           set(${RESULT} 1 PARENT_SCOPE)
           return()
         endif()
@@ -98,29 +108,8 @@ function(family_filter RESULT DIR)
 
     # Didn't find it in only file so don't build
     set(${RESULT} 0 PARENT_SCOPE)
-
-  elseif (EXISTS "${DIR}/skip.txt")
-    file(READ "${DIR}/skip.txt" SKIPS)
-    # Replace newlines with semicolon so that it is treated as a list by CMake
-    string(REPLACE "\n" ";" SKIPS_LINES ${SKIPS})
-
-    # For each mcu
-    foreach(MCU IN LISTS FAMILY_MCUS)
-      # For each line in only.txt
-      foreach(_line ${SKIPS_LINES})
-        # If mcu:xxx exists for this mcu then skip
-        if (${_line} STREQUAL "mcu:${MCU}")
-          set(${RESULT} 0 PARENT_SCOPE)
-          return()
-        endif()
-      endforeach()
-    endforeach()
-
-    # Didn't find in skip file so build
-    set(${RESULT} 1 PARENT_SCOPE)
   else()
-
-    # Didn't find skip or only file so build
+    # only.txt not exist so build
     set(${RESULT} 1 PARENT_SCOPE)
   endif()
 endfunction()
@@ -429,6 +418,18 @@ function(family_flash_pyocd TARGET)
 endfunction()
 
 
+# Add flash teensy_cli target
+function(family_flash_teensy TARGET)
+  if (NOT DEFINED TEENSY_CLI)
+    set(TEENSY_CLI teensy_loader_cli)
+  endif ()
+
+  add_custom_target(${TARGET}-teensy
+    DEPENDS ${TARGET}
+    COMMAND ${TEENSY_CLI} --mcu=${TEENSY_MCU} -w -s $<TARGET_FILE_DIR:${TARGET}>/${TARGET}.hex
+    )
+endfunction()
+
 # Add flash using NXP's LinkServer (redserver)
 # https://www.nxp.com/design/software/development-software/mcuxpresso-software-and-tools-/linkserver-for-microcontrollers:LINKERSERVER
 function(family_flash_nxplink TARGET)
@@ -456,6 +457,21 @@ function(family_flash_dfu_util TARGET OPTION)
     DEPENDS ${TARGET}
     COMMAND ${DFU_UTIL} -R -d ${DFU_UTIL_VID_PID} -a 0 -D $<TARGET_FILE_DIR:${TARGET}>/${TARGET}.bin
     VERBATIM
+    )
+endfunction()
+
+function(family_flash_msp430flasher TARGET)
+  if (NOT DEFINED MSP430Flasher)
+    set(MSP430FLASHER MSP430Flasher)
+  endif ()
+
+  # set LD_LIBRARY_PATH to find libmsp430.so (directory containing MSP430Flasher)
+  find_program(MSP430FLASHER_PATH MSP430Flasher)
+  get_filename_component(MSP430FLASHER_PARENT_DIR "${MSP430FLASHER_PATH}" DIRECTORY)
+  add_custom_target(${TARGET}-msp430flasher
+    DEPENDS ${TARGET}
+    COMMAND ${CMAKE_COMMAND} -E env LD_LIBRARY_PATH=${MSP430FLASHER_PARENT_DIR}
+            ${MSP430FLASHER} -w $<TARGET_FILE_DIR:${TARGET}>/${TARGET}.hex -z [VCC]
     )
 endfunction()
 
