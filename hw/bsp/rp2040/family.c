@@ -42,7 +42,7 @@
 static uart_inst_t *uart_inst;
 #endif
 
-#if CFG_TUH_RPI_PIO_USB || CFG_TUD_RPI_PIO_USB
+#if (CFG_TUH_ENABLED && CFG_TUH_RPI_PIO_USB) || (CFG_TUD_ENABLED && CFG_TUD_RPI_PIO_USB)
 #include "pio_usb.h"
 #endif
 
@@ -79,7 +79,13 @@ bool __no_inline_not_in_flash_func(get_bootsel_button)(void) {
 
   // The HI GPIO registers in SIO can observe and control the 6 QSPI pins.
   // Note the button pulls the pin *low* when pressed.
-  bool button_state = (sio_hw->gpio_hi_in & (1u << CS_PIN_INDEX));
+
+  #ifdef __ARM_ARCH_6M__ // CM0 for rp2040
+    #define CS_BIT (1u << 1)
+  #else // rp2350 (cm33/risv)
+    #define CS_BIT SIO_GPIO_HI_IN_QSPI_CSN_BITS
+  #endif
+  bool button_state = (sio_hw->gpio_hi_in & CS_BIT);
 
   // Need to restore the state of chip select, else we are going to have a
   // bad time when we return to code in flash!
@@ -126,7 +132,7 @@ void stdio_rtt_init(void) {
 
 void board_init(void)
 {
-#if CFG_TUH_RPI_PIO_USB || CFG_TUD_RPI_PIO_USB
+#if (CFG_TUH_ENABLED && CFG_TUH_RPI_PIO_USB) || (CFG_TUD_ENABLED && CFG_TUD_RPI_PIO_USB)
   // Set the system clock to a multiple of 120mhz for bitbanging USB with pico-usb
   set_sys_clock_khz(120000, true);
 
@@ -205,7 +211,9 @@ size_t board_get_unique_id(uint8_t id[], size_t max_len) {
   pico_get_unique_board_id(&pico_id);
 
   size_t len = PICO_UNIQUE_BOARD_ID_SIZE_BYTES;
-  if (len > max_len) len = max_len;
+  if (len > max_len) {
+    len = max_len;
+  }
 
   memcpy(id, pico_id.id, len);
   return len;
@@ -275,7 +283,15 @@ static void max3421_init(void) {
   gpio_set_function(MAX3421_SCK_PIN, GPIO_FUNC_SPI);
   gpio_set_function(MAX3421_MOSI_PIN, GPIO_FUNC_SPI);
   gpio_set_function(MAX3421_MISO_PIN, GPIO_FUNC_SPI);
+
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnull-dereference"
+#endif
   spi_set_format(MAX3421_SPI, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 }
 
 //// API to enable/disable MAX3421 INTR pin interrupt

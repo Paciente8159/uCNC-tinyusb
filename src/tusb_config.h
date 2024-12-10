@@ -41,14 +41,23 @@ extern "C"
 #ifdef STM32F0xx
 #define CFG_TUSB_MCU OPT_MCU_STM32F0
 #endif
+#ifdef STM32G0xx
+#define CFG_TUSB_MCU OPT_MCU_STM32G0
+#endif
 #ifdef STM32F1xx
 #define CFG_TUSB_MCU OPT_MCU_STM32F1
+#endif
+#ifdef STM32F3xx
+#define CFG_TUSB_MCU OPT_MCU_STM32F3
 #endif
 #ifdef STM32F4xx
 #define CFG_TUSB_MCU OPT_MCU_STM32F4
 #endif
 #ifdef STM32F7xx
 #define CFG_TUSB_MCU OPT_MCU_STM32F7
+#endif
+#ifdef STM32H7xx
+#define CFG_TUSB_MCU OPT_MCU_STM32H7
 #endif
 #endif
 // SAMD21

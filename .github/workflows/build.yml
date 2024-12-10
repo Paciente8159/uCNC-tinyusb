@@ -51,14 +51,13 @@ jobs:
   # Build CMake
   # ---------------------------------------
   cmake:
-    # if: false
     needs: set-matrix
     uses: ./.github/workflows/build_util.yml
     strategy:
       fail-fast: false
       matrix:
         toolchain:
-          # - 'arm-clang' is built by circle-ci
+          # - 'arm-clang' is built by circle-ci in PR
           - 'aarch64-gcc'
           - 'arm-gcc'
           - 'msp430-gcc'
@@ -66,36 +65,38 @@ jobs:
     with:
       build-system: 'cmake'
       toolchain: ${{ matrix.toolchain }}
-      build-args: ${{ toJSON(fromJSON(needs.set-matrix.outputs.json)[matrix.toolchain].family) }}
-      one-per-family: ${{ github.event_name != 'pull_request' }}
+      build-args: ${{ toJSON(fromJSON(needs.set-matrix.outputs.json)[matrix.toolchain]) }}
+      one-per-family: ${{ github.event_name == 'push' }}
 
   # ---------------------------------------
-  # Build Make
+  # Build Make (built by circle-ci in PR, only build on push here)
   # ---------------------------------------
   make:
-    # if: false
+    if: github.event_name == 'push'
     needs: set-matrix
     uses: ./.github/workflows/build_util.yml
     strategy:
       fail-fast: false
       matrix:
         toolchain:
-          # 'arm-clang' is built by circle-ci
-          - 'aarch64-gcc'
+          # 'arm-clang'
           - 'arm-gcc'
+          - 'aarch64-gcc'
           - 'msp430-gcc'
           - 'riscv-gcc'
           - 'rx-gcc'
+          - 'esp-idf' # build-system is ignored
     with:
       build-system: 'make'
       toolchain: ${{ matrix.toolchain }}
-      build-args: ${{ toJSON(fromJSON(needs.set-matrix.outputs.json)[matrix.toolchain].family) }}
-      one-per-family: ${{ github.event_name != 'pull_request' }}
+      build-args: ${{ toJSON(fromJSON(needs.set-matrix.outputs.json)[matrix.toolchain]) }}
+      one-per-family: true
 
   # ---------------------------------------
   # Build Make on Windows/MacOS
   # ---------------------------------------
   make-os:
+    if: github.event_name == 'pull_request'
     uses: ./.github/workflows/build_util.yml
     strategy:
       fail-fast: false
@@ -109,39 +110,24 @@ jobs:
       one-per-family: true
 
   # ---------------------------------------
-  # Build Espressif
-  # ---------------------------------------
-  espressif:
-    # if: false
-    uses: ./.github/workflows/build_util.yml
-    strategy:
-      fail-fast: false
-      matrix:
-        board:
-          - 'espressif_kaluga_1'
-          - 'espressif_s3_devkitm'
-    with:
-      build-system: 'cmake'
-      toolchain: 'esp-idf'
-      toolchain_version: 'v5.1.1'
-      build-args: '["-b${{ matrix.board }}"]'
-
-  # ---------------------------------------
   # Build IAR on HFP self-hosted
   # ---------------------------------------
   arm-iar:
-    # if: false
-    if: github.repository_owner == 'hathach'
+    if: github.repository_owner == 'hathach' && github.event_name == 'push'
     needs: set-matrix
     runs-on: [self-hosted, Linux, X64, hifiphile]
     env:
-      BUILD_ARGS: ${{ join(fromJSON(needs.set-matrix.outputs.json)['arm-iar'].family, ' ') }}
+      BUILD_ARGS: ${{ join(fromJSON(needs.set-matrix.outputs.json)['arm-iar'], ' ') }}
+      # IAR_LMS_BEARER_TOKEN: ${{ secrets.IAR_LMS_BEARER_TOKEN }}
     steps:
       - name: Clean workspace
         run: |
           echo "Cleaning up previous run"
           rm -rf "${{ github.workspace }}"
           mkdir -p "${{ github.workspace }}"
+
+      - name: Toolchain version
+        run: iccarm --version
 
       - name: Checkout TinyUSB
         uses: actions/checkout@v4
@@ -151,8 +137,3 @@ jobs:
 
       - name: Build
         run: python3 tools/build.py --one-per-family --toolchain iar $BUILD_ARGS
-
-      - name: Test on actual hardware (hardware in the loop)
-        if: github.event_name == 'pull_request'
-        run: |
-          python3 test/hil/hil_test.py hfp.json

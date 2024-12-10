@@ -206,6 +206,7 @@ function(family_configure_common TARGET RTOS)
 
   # compile define from command line
   if(DEFINED CFLAGS_CLI)
+    separate_arguments(CFLAGS_CLI)
     target_compile_options(${TARGET} PUBLIC ${CFLAGS_CLI})
   endif()
 
@@ -288,6 +289,12 @@ function(family_add_tinyusb TARGET OPT_MCU RTOS)
       ${TOP}/src/portable/analog/max3421/hcd_max3421.c
       )
   endif ()
+
+  # compile define from command line
+  if(DEFINED CFLAGS_CLI)
+    separate_arguments(CFLAGS_CLI)
+    target_compile_options(${TARGET}-tinyusb PUBLIC ${CFLAGS_CLI})
+  endif()
 
 endfunction()
 
@@ -418,6 +425,12 @@ exit"
     COMMAND ${JLINKEXE} -device ${JLINK_DEVICE} ${OPTION_LIST} -if ${JLINK_IF} -JTAGConf -1,-1 -speed auto -CommandFile $<TARGET_FILE_DIR:${TARGET}>/${TARGET}.jlink
     VERBATIM
     )
+
+  # optional flash post build
+#  add_custom_command(TARGET ${TARGET} POST_BUILD
+#    COMMAND ${JLINKEXE} -device ${JLINK_DEVICE} ${OPTION_LIST} -if ${JLINK_IF} -JTAGConf -1,-1 -speed auto -CommandFile $<TARGET_FILE_DIR:${TARGET}>/${TARGET}.jlink
+#    VERBATIM
+#    )
 endfunction()
 
 
@@ -463,7 +476,7 @@ function(family_flash_openocd TARGET)
   # note skip verify since it has issue with rp2040
   add_custom_target(${TARGET}-openocd
     DEPENDS ${TARGET}
-    COMMAND ${OPENOCD} ${OPTION_LIST} -c init -c halt -c "program $<TARGET_FILE:${TARGET}> reset" ${OPTION_LIST2} -c exit
+    COMMAND ${OPENOCD} -c "tcl_port disabled" -c "gdb_port disabled" ${OPTION_LIST} -c init -c halt -c "program $<TARGET_FILE:${TARGET}>" -c reset ${OPTION_LIST2} -c exit
     VERBATIM
     )
 endfunction()
@@ -479,6 +492,25 @@ function(family_flash_openocd_wch TARGET)
   family_flash_openocd(${TARGET})
 endfunction()
 
+
+# Add flash openocd adi (Analog Devices) target
+# included with msdk or compiled from release branch of https://github.com/analogdevicesinc/openocd
+function(family_flash_openocd_adi TARGET)
+  if (DEFINED $ENV{MAXIM_PATH})
+    # use openocd from msdk
+    set(OPENOCD ENV{MAXIM_PATH}/Tools/OpenOCD/openocd)
+    set(OPENOCD_OPTION2 "-s ENV{MAXIM_PATH}/Tools/OpenOCD/scripts")
+  else()
+    # compiled from source
+    if (NOT DEFINED OPENOCD_ADI_PATH)
+      set(OPENOCD_ADI_PATH $ENV{HOME}/app/openocd_adi)
+    endif ()
+    set(OPENOCD ${OPENOCD_ADI_PATH}/src/openocd)
+    set(OPENOCD_OPTION2 "-s ${OPENOCD_ADI_PATH}/tcl")
+  endif ()
+
+  family_flash_openocd(${TARGET})
+endfunction()
 
 # Add flash with https://github.com/ch32-rs/wlink
 function(family_flash_wlink_rs TARGET)
@@ -523,6 +555,7 @@ function(family_flash_teensy TARGET)
 
   add_custom_target(${TARGET}-teensy
     DEPENDS ${TARGET}
+    COMMAND ${CMAKE_OBJCOPY} -Oihex $<TARGET_FILE:${TARGET}> $<TARGET_FILE_DIR:${TARGET}>/${TARGET}.hex
     COMMAND ${TEENSY_CLI} --mcu=${TEENSY_MCU} -w -s $<TARGET_FILE_DIR:${TARGET}>/${TARGET}.hex
     )
 endfunction()
@@ -570,6 +603,21 @@ function(family_flash_msp430flasher TARGET)
     DEPENDS ${TARGET}
     COMMAND ${CMAKE_COMMAND} -E env LD_LIBRARY_PATH=${MSP430FLASHER_PARENT_DIR}
             ${MSP430FLASHER} -w $<TARGET_FILE_DIR:${TARGET}>/${TARGET}.hex -z [VCC]
+    )
+endfunction()
+
+
+function(family_flash_uniflash TARGET)
+  if (NOT DEFINED DSLITE)
+    set(DSLITE dslite.sh)
+  endif ()
+
+  separate_arguments(OPTION_LIST UNIX_COMMAND ${UNIFLASH_OPTION})
+
+  add_custom_target(${TARGET}-uniflash
+    DEPENDS ${TARGET}
+    COMMAND ${DSLITE} ${UNIFLASH_OPTION} -f $<TARGET_FILE_DIR:${TARGET}>/${TARGET}.hex
+    VERBATIM
     )
 endfunction()
 

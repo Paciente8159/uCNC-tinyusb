@@ -107,6 +107,9 @@
 #elif CFG_TUSB_MCU == OPT_MCU_STM32G0
   #include "stm32g0xx.h"
 
+#elif CFG_TUSB_MCU == OPT_MCU_STM32C0
+  #include "stm32c0xx.h"
+
 #elif CFG_TUSB_MCU == OPT_MCU_CXD56
   // no header needed
 
@@ -169,6 +172,18 @@
 
 #elif TU_CHECK_MCU(OPT_MCU_BCM2711, OPT_MCU_BCM2835, OPT_MCU_BCM2837)
   // no header needed
+
+#elif CFG_TUSB_MCU == OPT_MCU_MAX32690
+  #include "max32690.h"
+
+#elif CFG_TUSB_MCU == OPT_MCU_MAX32650
+  #include "max32650.h"
+
+#elif CFG_TUSB_MCU == OPT_MCU_MAX32666
+  #include "max32665.h"
+
+#elif CFG_TUSB_MCU == OPT_MCU_MAX78002
+  #include "max78002.h"
 
 #else
   #error "Missing MCU header"
