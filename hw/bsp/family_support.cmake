@@ -206,6 +206,7 @@ function(family_configure_common TARGET RTOS)
 
   # compile define from command line
   if(DEFINED CFLAGS_CLI)
+    separate_arguments(CFLAGS_CLI)
     target_compile_options(${TARGET} PUBLIC ${CFLAGS_CLI})
   endif()
 
@@ -288,6 +289,12 @@ function(family_add_tinyusb TARGET OPT_MCU RTOS)
       ${TOP}/src/portable/analog/max3421/hcd_max3421.c
       )
   endif ()
+
+  # compile define from command line
+  if(DEFINED CFLAGS_CLI)
+    separate_arguments(CFLAGS_CLI)
+    target_compile_options(${TARGET}-tinyusb PUBLIC ${CFLAGS_CLI})
+  endif()
 
 endfunction()
 
@@ -418,6 +425,12 @@ exit"
     COMMAND ${JLINKEXE} -device ${JLINK_DEVICE} ${OPTION_LIST} -if ${JLINK_IF} -JTAGConf -1,-1 -speed auto -CommandFile $<TARGET_FILE_DIR:${TARGET}>/${TARGET}.jlink
     VERBATIM
     )
+
+  # optional flash post build
+#  add_custom_command(TARGET ${TARGET} POST_BUILD
+#    COMMAND ${JLINKEXE} -device ${JLINK_DEVICE} ${OPTION_LIST} -if ${JLINK_IF} -JTAGConf -1,-1 -speed auto -CommandFile $<TARGET_FILE_DIR:${TARGET}>/${TARGET}.jlink
+#    VERBATIM
+#    )
 endfunction()
 
 
@@ -463,7 +476,7 @@ function(family_flash_openocd TARGET)
   # note skip verify since it has issue with rp2040
   add_custom_target(${TARGET}-openocd
     DEPENDS ${TARGET}
-    COMMAND ${OPENOCD} ${OPTION_LIST} -c init -c halt -c "program $<TARGET_FILE:${TARGET}> reset" ${OPTION_LIST2} -c exit
+    COMMAND ${OPENOCD} -c "tcl_port disabled" -c "gdb_port disabled" ${OPTION_LIST} -c init -c halt -c "program $<TARGET_FILE:${TARGET}>" -c reset ${OPTION_LIST2} -c exit
     VERBATIM
     )
 endfunction()
@@ -542,6 +555,7 @@ function(family_flash_teensy TARGET)
 
   add_custom_target(${TARGET}-teensy
     DEPENDS ${TARGET}
+    COMMAND ${CMAKE_OBJCOPY} -Oihex $<TARGET_FILE:${TARGET}> $<TARGET_FILE_DIR:${TARGET}>/${TARGET}.hex
     COMMAND ${TEENSY_CLI} --mcu=${TEENSY_MCU} -w -s $<TARGET_FILE_DIR:${TARGET}>/${TARGET}.hex
     )
 endfunction()

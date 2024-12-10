@@ -2,6 +2,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2020, Ha Thach (tinyusb.org)
+ * Copyright (c) 2023, HiFiPhile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,26 +28,31 @@
 #ifndef BOARD_H_
 #define BOARD_H_
 
-#ifdef __cplusplus
- extern "C" {
-#endif
+// Green LED
+#define GREEN_LED_PORT         GPIOA
+#define GREEN_LED_PIN          GPIO_PIN_5
+#define GREEN_LED_STATE_ON     1
 
-#define _PINNUM(port, pin)    ((port)*32 + (pin))
+// Blue LED
+#define BLUE_LED_PORT          GPIOC
+#define BLUE_LED_PIN           GPIO_PIN_9
+#define BLUE_LED_STATE_ON      0
 
-// LED
-#define LED_PIN               _PINNUM(1, 13)
-#define LED_STATE_ON          0
+// Generic LED
+#define LED_PORT GREEN_LED_PORT
+#define LED_PIN GREEN_LED_PIN
+#define LED_STATE_ON GREEN_LED_STATE_ON
 
 // Button
-#define BUTTON_PIN            _PINNUM(0, 15)
+#define BUTTON_PORT           GPIOC
+#define BUTTON_PIN            GPIO_PIN_13
 #define BUTTON_STATE_ACTIVE   0
 
-// UART
-#define UART_RX_PIN     25
-#define UART_TX_PIN     24
-
-#ifdef __cplusplus
- }
-#endif
+// Enable UART serial communication with the ST-Link
+#define UART_DEV              USART2
+#define UART_GPIO_PORT        GPIOA
+#define UART_GPIO_AF          GPIO_AF1_USART2
+#define UART_TX_PIN           GPIO_PIN_2
+#define UART_RX_PIN           GPIO_PIN_3
 
 #endif /* BOARD_H_ */

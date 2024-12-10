@@ -1,7 +1,11 @@
 /*
  * The MIT License (MIT)
  *
+<<<<<<<< HEAD:hw/bsp/max32690/boards/apard32690/board.h
  * Copyright (c) 2024, Brent Kowal (Analog Devices, Inc)
+========
+ * Copyright (c) 2020, Ha Thach (tinyusb.org)
+>>>>>>>> upstream/master:hw/bsp/espressif/boards/espressif_p4_function_ev/board.h
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +30,18 @@
 
 #ifndef BOARD_H_
 #define BOARD_H_
+<<<<<<<< HEAD:hw/bsp/max32690/boards/apard32690/board.h
 
 #include "gpio.h"
 #include "mxc_sys.h"
+========
+>>>>>>>> upstream/master:hw/bsp/espressif/boards/espressif_p4_function_ev/board.h
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+<<<<<<<< HEAD:hw/bsp/max32690/boards/apard32690/board.h
 // LED
 #define LED_PORT        MXC_GPIO2
 #define LED_PIN         MXC_GPIO_PIN_1
@@ -48,6 +56,16 @@ extern "C" {
 
 // UART Enable for UART on ARM SWD Connector
 #define UART_NUM 0
+========
+// #define NEOPIXEL_PIN          48
+
+#define BUTTON_PIN            35
+#define BUTTON_STATE_ACTIVE   0
+
+// For CI hardware test, to test both device and host on the same HS port with help of
+#define HIL_DEVICE_HOST_MUX_PIN  47
+#define HIL_DEVICE_STATE         1
+>>>>>>>> upstream/master:hw/bsp/espressif/boards/espressif_p4_function_ev/board.h
 
 #ifdef __cplusplus
 }

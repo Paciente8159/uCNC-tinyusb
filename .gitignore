@@ -89,3 +89,5 @@ lib/sct_neopixel
 tools/uf2
 *.zip
 .PVS-Studio
+.vscode/
+build/

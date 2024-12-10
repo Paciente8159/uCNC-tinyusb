@@ -77,7 +77,7 @@ Host Stack
 - Human Interface Device (HID): Keyboard, Mouse, Generic
 - Mass Storage Class (MSC)
 - Communication Device Class: CDC-ACM
-- Vendor serial over USB: FTDI, CP210x
+- Vendor serial over USB: FTDI, CP210x, CH34x
 - Hub with multiple-level support
 
 Similar to the Device Stack, if you have a special requirement, `usbh_app_driver_get_cb()` can be used to write your own class driver without modifying the stack.
@@ -111,7 +111,7 @@ Following CPUs are supported, check out `Supported Devices`_ for comprehensive l
 +--------------+------------------------------------------------------------+
 | Analog       | max32: 650, 666, 690. max78002                             |
 |              |                                                            |
-|              | max3421e (host)                                            |
+|              | max3421e (spi host)                                        |
 +--------------+------------------------------------------------------------+
 | Brigetek     | FT90x                                                      |
 +--------------+------------------------------------------------------------+
@@ -143,7 +143,7 @@ Following CPUs are supported, check out `Supported Devices`_ for comprehensive l
 |              |                                                            |
 |              | MCX: A15, N9                                               |
 +--------------+------------------------------------------------------------+
-| Raspberry Pi | RP2040                                                     |
+| Raspberry Pi | RP2040, RP2350                                             |
 +--------------+-----+------------------------------------------------------+
 | Renesas      | RA: 4M1, 4M3, 6M1, 6M5                                     |
 |              |                                                            |
@@ -153,7 +153,7 @@ Following CPUs are supported, check out `Supported Devices`_ for comprehensive l
 +--------------+------------------------------------------------------------+
 | Sony         | CXD56                                                      |
 +--------------+------------------------------------------------------------+
-| ST STM32     | F0, F1, F2, F3, F4, F7, G0, G4, H5, H7,                    |
+| ST STM32     | C0, F0, F1, F2, F3, F4, F7, G0, G4, H5, H7,                |
 |              |                                                            |
 |              | L0, L1, L4, L4+, L5, U5, WB                                |
 +--------------+------------------------------------------------------------+
@@ -197,7 +197,7 @@ Docs
   - `Structure`_
   - `Porting`_
 
-.. |Build Status| image:: https://github.com/hathach/tinyusb/actions/workflows/cmake_arm.yml/badge.svg
+.. |Build Status| image:: https://github.com/hathach/tinyusb/actions/workflows/build.yml/badge.svg
    :target: https://github.com/hathach/tinyusb/actions
 .. |CircleCI Status| image:: https://dl.circleci.com/status-badge/img/circleci/4AYHvUhFxdnY4rA7LEsdqW/QmrpoL2AjGqetvFQNqtWyq/tree/master.svg?style=svg
    :target: https://dl.circleci.com/status-badge/redirect/circleci/4AYHvUhFxdnY4rA7LEsdqW/QmrpoL2AjGqetvFQNqtWyq/tree/master
