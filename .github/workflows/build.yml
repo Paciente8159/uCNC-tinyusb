@@ -58,16 +58,29 @@ jobs:
       fail-fast: false
       matrix:
         toolchain:
-          # - 'arm-clang' is built by circle-ci
+          # - 'arm-clang' is built by circle-ci in PR
           - 'aarch64-gcc'
-          - 'arm-gcc'
           - 'msp430-gcc'
           - 'riscv-gcc'
     with:
       build-system: 'cmake'
       toolchain: ${{ matrix.toolchain }}
       build-args: ${{ toJSON(fromJSON(needs.set-matrix.outputs.json)[matrix.toolchain].family) }}
-      one-per-family: ${{ github.event_name != 'pull_request' }}
+      one-per-family: ${{ github.event_name == 'push' }}
+
+  # ---------------------------------------
+  # Build CMake arm-gcc
+  # only build with push, for PR: all board is built by circle-ci
+  # ---------------------------------------
+  cmake-arm-gcc:
+    if: github.event_name == 'push'
+    needs: set-matrix
+    uses: ./.github/workflows/build_util.yml
+    with:
+      build-system: 'cmake'
+      toolchain: 'arm-gcc'
+      build-args: ${{ toJSON(fromJSON(needs.set-matrix.outputs.json)['arm-gcc'].family) }}
+      one-per-family: true
 
   # ---------------------------------------
   # Build Make
@@ -80,7 +93,7 @@ jobs:
       fail-fast: false
       matrix:
         toolchain:
-          # 'arm-clang' is built by circle-ci
+          # 'arm-clang' would be built by circle-ci
           - 'aarch64-gcc'
           - 'arm-gcc'
           - 'msp430-gcc'
@@ -90,12 +103,13 @@ jobs:
       build-system: 'make'
       toolchain: ${{ matrix.toolchain }}
       build-args: ${{ toJSON(fromJSON(needs.set-matrix.outputs.json)[matrix.toolchain].family) }}
-      one-per-family: ${{ github.event_name != 'pull_request' }}
+      one-per-family: ${{ github.event_name == 'push' }}
 
   # ---------------------------------------
   # Build Make on Windows/MacOS
   # ---------------------------------------
   make-os:
+    if: github.event_name == 'pull_request'
     uses: ./.github/workflows/build_util.yml
     strategy:
       fail-fast: false
