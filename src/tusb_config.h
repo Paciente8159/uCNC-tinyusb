@@ -72,6 +72,31 @@ extern "C"
 #ifdef ARDUINO_ARCH_RP2040
 #define CFG_TUSB_MCU OPT_MCU_RP2040
 #endif
+// ESP32
+#ifdef ARDUINO_ARCH_ESP32
+#ifdef ESP32
+#define CFG_TUSB_MCU OPT_MCU_ESP32
+#endif
+#ifdef ESP32S2
+#undef CFG_TUSB_MCU
+#define CFG_TUSB_MCU OPT_MCU_ESP32S2
+#endif
+#ifdef ESP32S3
+#undef CFG_TUSB_MCU
+#define CFG_TUSB_MCU OPT_MCU_ESP32S3
+#endif
+#ifdef ESP32C2
+#undef CFG_TUSB_MCU
+#define CFG_TUSB_MCU OPT_MCU_ESP32C2
+#endif
+#ifdef ESP32C3
+#undef CFG_TUSB_MCU
+#define CFG_TUSB_MCU OPT_MCU_ESP32C3
+#endif
+#ifdef ESP32C6
+#undef CFG_TUSB_MCU
+#define CFG_TUSB_MCU OPT_MCU_ESP32C6
+#endif
 #endif
 
 #ifndef CFG_TUSB_MCU
