@@ -99,6 +99,8 @@ extern "C"
 #endif
 #endif
 
+#endif
+
 #ifndef CFG_TUSB_MCU
 #define CFG_TUSB_MCU OPT_MCU_NONE
 #endif
