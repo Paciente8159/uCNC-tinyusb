@@ -98,7 +98,10 @@ extern "C"
 #define CFG_TUSB_MCU OPT_MCU_ESP32C6
 #endif
 #endif
-
+// Raspberry Pi Pico
+#ifdef ARDUINO_ARCH_RENESAS
+#define CFG_TUSB_MCU OPT_MCU_RAXXX
+#endif
 #endif
 
 #ifndef CFG_TUSB_MCU
